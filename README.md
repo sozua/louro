@@ -2,11 +2,7 @@
 
 AI code reviewer for GitHub pull requests. Self-hosted, bring your own API key.
 
-Louro receives webhooks when PRs are opened or updated, fetches the diff, runs it through an AI agent ([agno](https://docs.agno.com)), and posts inline comments using [Conventional Comments](https://conventionalcomments.org/) labels. It also writes a summary to the PR description. The agent can read full files from the repo when it needs more context.
-
-When someone replies to a review comment, a classifier scores the sentiment and a second agent responds. If the reply corrects Louro about a project convention, that gets saved to a per-repo knowledge base (PostgreSQL + pgvector) so it doesn't repeat the mistake.
-
-The knowledge base is built during onboarding, when an agent reads the file tree, config files, recent commits, and recent PRs to understand how the codebase works.
+Open a PR and Louro posts inline review comments. Reply to a comment and it replies back. If you correct it, it remembers for next time.
 
 ## Setup
 
