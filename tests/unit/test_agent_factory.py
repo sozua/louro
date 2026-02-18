@@ -11,41 +11,30 @@ _BASE = {
     "github_app_id": "123",
     "github_private_key": "test-key",
     "github_webhook_secret": "secret",
+    "ai_gateway_api_key": "gw-key",
 }
 
 
-class TestBuildModelForProvider:
-    def test_anthropic_creates_claude(self, monkeypatch):
-        settings = Settings(**{**_BASE, "anthropic_api_key": "sk-ant", "model_provider": "anthropic"})
+def _settings(**overrides) -> Settings:
+    return Settings(**{**_BASE, **overrides}, _env_file=None)
+
+
+class TestBuildModelForId:
+    def test_returns_openai_like_with_gateway_config(self, monkeypatch):
+        settings = _settings(ai_gateway_base_url="https://gw.example.com/v1")
         monkeypatch.setattr("src.agent.factory.get_settings", lambda: settings)
 
         from src.agent.factory import _build_model_for_id
 
-        model = _build_model_for_id("claude-opus-4-20250514")
-        assert type(model).__name__ == "Claude"
-
-    def test_bedrock_creates_aws(self, monkeypatch):
-        settings = Settings(**{**_BASE, "model_provider": "bedrock", "anthropic_api_key": ""})
-        monkeypatch.setattr("src.agent.factory.get_settings", lambda: settings)
-
-        from src.agent.factory import _build_model_for_id
-
-        model = _build_model_for_id("anthropic.claude-3-sonnet")
-        assert type(model).__name__ == "AwsBedrock"
-
-    def test_gemini_creates_gemini(self, monkeypatch):
-        settings = Settings(**{**_BASE, "model_provider": "gemini", "google_api_key": "gkey", "anthropic_api_key": ""})
-        monkeypatch.setattr("src.agent.factory.get_settings", lambda: settings)
-
-        from src.agent.factory import _build_model_for_id
-
-        model = _build_model_for_id("gemini-2.0-flash")
-        assert type(model).__name__ == "Gemini"
+        model = _build_model_for_id("anthropic/claude-sonnet-4-5-20250929")
+        assert type(model).__name__ == "OpenAILike"
+        assert model.api_key == "gw-key"
+        assert model.base_url == "https://gw.example.com/v1"
 
 
 class TestCreateReviewAgent:
     def test_has_knowledge(self, monkeypatch):
-        settings = Settings(**{**_BASE, "anthropic_api_key": "sk-ant"})
+        settings = _settings()
         monkeypatch.setattr("src.agent.factory.get_settings", lambda: settings)
 
         from src.agent.factory import create_review_agent
@@ -58,7 +47,7 @@ class TestCreateReviewAgent:
 
 class TestCreateOnboardAgent:
     def test_has_no_knowledge(self, monkeypatch):
-        settings = Settings(**{**_BASE, "anthropic_api_key": "sk-ant"})
+        settings = _settings()
         monkeypatch.setattr("src.agent.factory.get_settings", lambda: settings)
 
         from src.agent.factory import create_onboard_agent

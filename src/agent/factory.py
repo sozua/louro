@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from agno.agent import Agent
-from agno.models.anthropic import Claude
-from agno.models.aws import AwsBedrock
-from agno.models.google import Gemini
+from agno.models.openai.like import OpenAILike
 
 from src.agent.prompts import (
     EVOLUTION_PROMPT,
@@ -12,22 +10,23 @@ from src.agent.prompts import (
     get_review_prompt,
 )
 from src.agent.tools import make_tools
-from src.config import ModelProvider, get_settings
+from src.config import get_settings
 from src.knowledge.store import get_knowledge_base
 from src.models import ReviewResponseSchema
 
 
 def _build_model_for_id(model_id: str):
     s = get_settings()
-    match s.model_provider:
-        case ModelProvider.ANTHROPIC:
-            return Claude(id=model_id, api_key=s.anthropic_api_key)
-        case ModelProvider.BEDROCK:
-            return AwsBedrock(id=model_id)
-        case ModelProvider.GEMINI:
-            return Gemini(id=model_id, api_key=s.google_api_key)
-        case _:
-            raise ValueError(f"Unsupported model provider: {s.model_provider}")
+    extra_body = None
+    if s.ai_gateway_providers:
+        providers = [p.strip() for p in s.ai_gateway_providers.split(",")]
+        extra_body = {"providerOptions": {"gateway": {"only": providers}}}
+    return OpenAILike(
+        id=model_id,
+        api_key=s.ai_gateway_api_key,
+        base_url=s.ai_gateway_base_url,
+        extra_body=extra_body,
+    )
 
 
 def _build_primary_model():

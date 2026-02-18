@@ -98,7 +98,7 @@ def get_token_budget() -> TokenBudget:
     global _budget
     if _budget is None:
         settings = get_settings()
-        _budget = TokenBudget(settings.anthropic_input_tokens_per_minute)
+        _budget = TokenBudget(settings.input_tokens_per_minute)
     return _budget
 
 

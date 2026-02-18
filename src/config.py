@@ -11,12 +11,6 @@ class Language(StrEnum):
     EN_US = "en-US"
 
 
-class ModelProvider(StrEnum):
-    ANTHROPIC = "anthropic"
-    BEDROCK = "bedrock"
-    GEMINI = "gemini"
-
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
@@ -34,21 +28,21 @@ class Settings(BaseSettings):
     def pgvector_url(self) -> str:
         return self.database_url.replace("+asyncpg", "+psycopg")
 
-    # Model
-    model_provider: ModelProvider = ModelProvider.ANTHROPIC
-    primary_model_id: str = "claude-sonnet-4-5-20250929"
-    standard_model_id: str = "claude-sonnet-4-5-20250929"
-    classifier_model_id: str = "claude-haiku-4-5-20251001"
+    # AI Gateway (OpenAI-compatible, routes to any provider)
+    ai_gateway_api_key: str
+    ai_gateway_base_url: str = "https://ai-gateway.vercel.sh/v1"
 
-    # Anthropic
-    anthropic_api_key: str = ""
-    anthropic_input_tokens_per_minute: int = 30_000
+    # Model IDs use provider/model format (e.g. anthropic/claude-sonnet-4.5)
+    primary_model_id: str = "anthropic/claude-sonnet-4.5"
+    standard_model_id: str = "anthropic/claude-sonnet-4.5"
+    classifier_model_id: str = "anthropic/claude-haiku-4.5"
 
-    # AWS Bedrock
-    aws_region: str = "us-east-1"
+    # Gateway provider routing (comma-separated, e.g. "bedrock,anthropic")
+    # When set, restricts which providers the gateway can route to.
+    ai_gateway_providers: str = ""
 
-    # Google Gemini
-    google_api_key: str = ""
+    # Rate limiting
+    input_tokens_per_minute: int = 30_000
 
     # Logging
     log_format: str = "text"  # "text" or "json"
@@ -61,10 +55,6 @@ class Settings(BaseSettings):
     def _validate_config(self) -> Settings:
         if not self.github_private_key and not self.github_private_key_path:
             raise ValueError("Set GITHUB_PRIVATE_KEY or GITHUB_PRIVATE_KEY_PATH")
-        if self.model_provider == ModelProvider.ANTHROPIC and not self.anthropic_api_key:
-            raise ValueError("ANTHROPIC_API_KEY is required when model_provider is 'anthropic'")
-        if self.model_provider == ModelProvider.GEMINI and not self.google_api_key:
-            raise ValueError("GOOGLE_API_KEY is required when model_provider is 'gemini'")
         return self
 
     def get_github_private_key_bytes(self) -> bytes:

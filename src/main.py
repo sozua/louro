@@ -106,7 +106,7 @@ async def lifespan(app: FastAPI):
             "authentication."
         )
 
-    await asyncio.to_thread(_run_migrations)
+    _run_migrations()
     logger.info("Database migrations applied")
 
     cleanup_task = asyncio.create_task(_cleanup_loop())

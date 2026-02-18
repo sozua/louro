@@ -36,8 +36,9 @@ def _override_settings(database_url: str):
         github_app_id="test-app-id",
         github_private_key="test-key",
         github_webhook_secret="test-secret",
-        anthropic_api_key="test-anthropic-key",
+        ai_gateway_api_key="test-gateway-key",
         database_url=database_url,
+        _env_file=None,
     )
     override_settings(test_settings)
     yield
