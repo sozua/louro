@@ -1,0 +1,88 @@
+[project]
+name = "louro"
+version = "0.1.0"
+description = "AI code reviewer for GitHub PRs"
+readme = "README.md"
+license = "AGPL-3.0-only"
+requires-python = ">=3.12"
+
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "agno>=1.0",
+    "anthropic>=0.40",
+    "httpx>=0.28",
+    "PyJWT[crypto]>=2.9",
+    "cryptography>=44",
+    "sqlalchemy[asyncio]>=2.0",
+    "alembic>=1.13",
+    "asyncpg>=0.30",
+    "pgvector>=0.3",
+    "psycopg[binary]>=3.2",
+    "pydantic-settings>=2.7",
+    "scalar-fastapi>=1.6",
+]
+
+[project.urls]
+Repository = "https://github.com/sozua/louro"
+Issues = "https://github.com/sozua/louro/issues"
+
+[project.optional-dependencies]
+bedrock = ["boto3>=1.35"]
+gemini = ["google-genai>=1.0"]
+test = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "testcontainers[postgres]>=4.0",
+    "httpx>=0.28",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = ["integration: requires PostgreSQL testcontainer"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["ruff>=0.9", "mypy>=1.11", "pre-commit>=4.0"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "E501",  # line too long (formatter handles this)
+    "B008",  # function call in defaults (FastAPI Depends pattern)
+    "RUF006",  # asyncio.create_task without storing ref (intentional fire-and-forget)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.coverage.run]
+source = ["src"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+ignore_missing_imports = true
