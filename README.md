@@ -1,6 +1,11 @@
-# Louro
+<div align="center">
+  <img src="assets/logo.png" alt="Louro" width="120">
+</div>
 
-AI code reviewer for GitHub pull requests. Self-hosted, bring your own API key.
+<p align="center">
+  AI code reviewer for GitHub pull requests.<br>
+  Self-hosted, bring your own API key.
+</p>
 
 Open a PR and Louro posts inline review comments. Reply to a comment and it replies back. If you correct it, it remembers for next time.
 
